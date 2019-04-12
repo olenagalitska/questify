@@ -1,0 +1,3 @@
+Okay great. Given a URL we can count the words that are on the page. If you use a site without a massive amount of words, like https://realpython.com, the processing should happen fairly quickly. What happens if the site has a lot of words, though? For example, try out http://gutenberg.ca. You’ll notice that this takes longer to process.
+
+If you have a number of users all hitting your site at once to get word counts, and some of them are trying to count larger pages, this can become a problem. Or perhaps you decide to change the functionality so that when a user inputs a URL, we recursively scrape the entire web site and calculate word frequencies based on each individual page. With enough traffic, this will significantly slow down the site.
