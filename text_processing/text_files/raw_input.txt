@@ -1,3 +1,17 @@
-Okay great. Given a URL we can count the words that are on the page. If you use a site without a massive amount of words, like https://realpython.com, the processing should happen fairly quickly. What happens if the site has a lot of words, though? For example, try out http://gutenberg.ca. You’ll notice that this takes longer to process.
+After unsuccessful negotiations between a coalition of Norwegian organizations and the academic publisher Elsevier culminated in cancelled subscriptions earlier this year, the two have successfully established a new nationwide licensing agreement. The deal, which was announced yesterday (April 23), is a pilot program that covers a period of two years, during which articles with corresponding authors from Norway will be published open access in most of Elsevier’s journals. 
 
-If you have a number of users all hitting your site at once to get word counts, and some of them are trying to count larger pages, this can become a problem. Or perhaps you decide to change the functionality so that when a user inputs a URL, we recursively scrape the entire web site and calculate word frequencies based on each individual page. With enough traffic, this will significantly slow down the site.
+“We are very happy about this,” says Nina Karlstrøm, the leader of the negotiation team for the Norwegian Directorate for ICT and Joint Services in Higher Education and Research (Unit), which represents seven universities and 39 research institutions in Norway. “As far as I know, we are the first to have one of these deals” with Elsevier. 
+
+Consortia in other countries in Europe, such as Sweden, Germany, and Hungary, have also been pushing for nationwide licenses that combine reading paywalled articles and publishing in an open-access format into one fee. But the discussions with Elsevier have yet to lead to successful agreements there, and prolonged negotiations have led academic institutions in those countries to terminate their contracts with the publisher. 
+
+In the US, the University of California, which has had similar disputes with Elsevier over open access, recently signed its first open-access publishing deal with another big academic publisher, Cambridge University Press. 
+
+See “As Elsevier Falters, Wiley Succeeds in Open-Access Deal Making”
+
+Under the new agreement, Norwegian institutions will collectively pay a fixed fee of €9 million (around US $10 million) to Elsevier per year, according to Karlstrøm. The payment will cover access to the publisher’s journals as well as approximately 2,000 open-access articles that Unit expects Norwegian academics to publish annually. 
+
+This deal allows Norwegian researchers to publish open access in around 90 percent of Elsevier’s journals. Approximately 400 society-owned titles as well as some high-impact publications, such as those belonging to The Lancet and Cell Press, are excluded. “This means that we must continue to keep the pressure on the publishers for our researchers to be able to also publish openly in the most prestigious journals,” Iselin Nybø, Norway’s research and higher education minister, says in a statement (translated from Norwegian with Google Translate).
+
+Unit is working together with Elsevier to include the remaining titles in either the existing pilot agreement or in future deals, says Karlstrøm. “We hope we continue on the road to full open access of Norwegian research output by 2024, which is our government’s policy.”
+
+Gino Ussi, Elsevier’s executive vice-president, tells the Financial Times that this agreement gave “fair value to both sides” and noted that the company hoped to use the information gathered from the pilot to improve its services. 

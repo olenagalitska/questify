@@ -1,0 +1,13 @@
+.ranked-sent {
+    background-color: yellow;
+}
+
+.ranked-sent:hover {
+    background-color: white;
+    cursor: pointer;
+}
+
+.not-ranked-sent:hover {
+    background-color: yellow;
+    cursor: pointer;
+}

@@ -1,9 +1,20 @@
-from rake_nltk import Rake, Metric
+# from rake_nltk import Rake, Metric
+from lexrank import STOPWORDS, LexRank
+from nltk.tokenize import sent_tokenize
+import math
+# from textteaser import TextTeaser
 
 
 def read_file_to_string(filepath):
     f = open(filepath, 'r')
     content = f.read()
+    f.close()
+    return content
+
+
+def read_file_to_array(filepath):
+    f = open(filepath, 'r')
+    content = f.readlines()
     f.close()
     return content
 
@@ -14,15 +25,22 @@ def rewrite_file(filepath, content):
     f.close()
 
 
-def get_ranked_words(filepath):
-    raw_text = read_file_to_string(filepath)
+def get_ranked_sentences_lexrank(filepath):
+    raw_text = list()
+    raw_text.append(read_file_to_array(filepath))
+    lxr = LexRank(raw_text, stopwords=STOPWORDS['en'])
+    sentences = sent_tokenize(read_file_to_string(filepath))
+    summary_sentences = lxr.get_summary(sentences, summary_size=2, threshold=.1)
+    return summary_sentences
 
-    r = Rake(min_length=1, max_length=1,
-             ranking_metric=Metric.WORD_DEGREE)  # Uses stopwords for english from NLTK, and all puntuation characters.
-    r.extract_keywords_from_text(raw_text)
-    return(r.get_ranked_phrases())
+
+# def get_ranked_sentences_textteaser(filepath):
+#     raw_text = read_file_to_string(filepath)
+    # tt = TextTeaser()
+    # return tt.summarize("", raw_text)
 
 
 if __name__ == '__main__':
-    rewrite_file("text_files/raw_input.txt", "why?")
-    print(read_file_to_string("text_files/raw_input.txt"))
+    summary = get_ranked_sentences_lexrank("text_files/raw_input.txt")
+    for sent in summary:
+        print(sent)
