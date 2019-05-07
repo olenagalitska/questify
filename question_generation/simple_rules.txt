@@ -1,0 +1,7 @@
+ROOT < (S < CC=conj)
+ROOT < (S < (/[ˆ,]/=adjunct $.. (/,/ $.. VP)))
+SBAR|VP|NP=app $, /,/=lead $. /,/=trail !$ CC !$ CONJP
+NP !< CC !< CONJP < (NP=noun $.. (/,/ $.. (NP=app $.. /,/)))
+S=finite !>> NP|PP < NP < (VP < VBP|VB|VBZ|VBD|MD) ?< /\\./=punct
+NP=noun > NP $.. VP=modifier
+NP=noun > NP $.. (SBAR < S=rel !< WHADVP !< WHADJP)
