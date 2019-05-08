@@ -1,7 +1,6 @@
 import nltk
-import spacy
 import requests
-from question_generation import ner, corenlp, simplify_sentence
+from question_generation import ner, corenlp
 from nltk.stem.wordnet import WordNetLemmatizer
 
 WH_RULES_PATH = '/Users/olenagalitska/Developer/questify/question_generation/wh_rules.txt'
@@ -15,34 +14,34 @@ def get_rule_patterns(path):
     return p
 
 
-def get_lemma(word, type):
-    return WordNetLemmatizer().lemmatize(word, type)
+wh_rules_patterns = get_rule_patterns(WH_RULES_PATH)
+
+
+def get_lemma(word, w_type):
+    return WordNetLemmatizer().lemmatize(word, w_type)
 
 
 def get_text_from_node(node, sentence):
     node_phrase = node.replace(')', ' ')
-    # print(node_phrase)
+
     s = list()
     for word in sentence.split():
-        if ',' in word:
-            s.append(word.replace(',', ''))
-            s.append(',')
-        if '.' in word:
-            s.append(word.replace('.', ''))
-            s.append('.')
-        if ':' in word:
-            s.append(word.replace(':', ''))
-            s.append(':')
-        if ';' in word:
-            s.append(word.replace(';', ''))
-            s.append(';')
-        else:
-            s.append(word)
+        for post_p in ',.;:)]}':
+            if post_p in word:
+                s.append(word.replace(post_p, ''))
+                s.append(post_p)
+            else:
+                s.append(word)
+
+        for pre_p in '({[':
+            if pre_p in word:
+                s.append(word.replace(pre_p, ''))
+                s.append(pre_p)
+            else:
+                s.append(word)
+
     res = [l for l in node_phrase.split() if l in s]
     return " ".join(res)
-
-
-wh_rules_patterns = get_rule_patterns(WH_RULES_PATH)
 
 
 def get_tregex_matches(pattern, sentence, key_name):
@@ -56,119 +55,108 @@ def get_tregex_matches(pattern, sentence, key_name):
     return result
 
 
-def get_question(sentence):
-    tree = nltk.pos_tag(sentence.split())
-    # print(tree)
-    sent_dict = dict()
-
-    for token in tree:
-        sent_dict[token[1]] = token[0]
-
-    questions = set()
-    url = "http://localhost:9010/tregex"
-
-    # if 'NNP' in sent_dict and 'VBZ' in sent_dict:
-    #     questions.add("What does " + sent_dict['NNP'] + " " + get_lemma(sent_dict['VBZ'], 'v') + "?")
-
+def get_answer_phrases(sentence):
     answer_patterns = get_rule_patterns(ANSWER_POS_RULES)
     answer_nodes = []
     for pattern in answer_patterns:
         answer_nodes += get_tregex_matches(pattern, sentence, 'match')
 
     for pattern in wh_rules_patterns:
-        request_params = {"pattern": pattern}
-        r = requests.post(url, data=sentence.encode('utf-8'), params=request_params)
-        if r.ok and '0' in r.json()['sentences'][0]:
-            unmovable_nodes = r.json()['sentences'][0]['0']['namedNodes']
-            for node in unmovable_nodes:
-                if node['unmv'] in answer_nodes:
-                    answer_nodes.remove(node['unmv'])
+        unmovable_nodes_matches = get_tregex_matches(pattern, sentence, 'namedNodes')
+        for match in unmovable_nodes_matches:
+            node = match[0]
+            if node['unmv'] in answer_nodes:
+                answer_nodes.remove(node['unmv'])
 
-    answer_phrases = list(get_text_from_node(x, sentence) for x in answer_nodes)
-    # print(answer_phrases)
+    return list(get_text_from_node(x, sentence) for x in answer_nodes)
 
-    # verb_selector = get_tregex_matches(
-    #     "ROOT < (S=clause < (VP=mainvp [ < (/VB.?/=tensed !< is|was|were|am|are|has|have|had|do|does|did)| < /VB.?/=tensed !< VP ]))",
-    #     sentence, 'namedNodes')
 
-    # print(corenlp.sNLP.parse(sentence))
+def get_question_word(noun):
+    question_word = "What "
+    ner_tag = ner.get_ner_tag(noun)
+    if ner_tag != "O":
+        if ner_tag == "PERSON":
+            question_word = "Who "
+        elif ner_tag == "LOCATION":
+            question_word = "Where "
+        elif ner_tag == "DATE":
+            question_word = "When "
+    return question_word
+
+
+def get_second_word(verb):
+    verb_pos_tag = corenlp.sNLP.pos(verb)[0][1]
+    second_word = "does"
+    if verb_pos_tag == "VBN" or verb_pos_tag == "VBD":
+        second_word = "did"
+    if verb_pos_tag == "VBP":
+        second_word = "do"
+    return second_word
+
+
+def get_main_verb(verb_phrase):
+    verbs = get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ', verb_phrase, 'match')
+    if len(verbs) != 0:
+        return get_text_from_node(verbs[0], verb_phrase)
+    else:
+        return verb_phrase
+
+
+def get_question(verb_phrase, noun, sentence):
+    question = ""
+    verb = get_main_verb(verb_phrase)
+    noun_pos_tag = corenlp.sNLP.pos(noun)[0][1]
+    if noun_pos_tag == "DT" or noun_pos_tag == "PRP":
+        question = "What " + verb_phrase + "?"
+
+    # determine question word
+    question_word = get_question_word(noun)
+
+    # transform verb
+    verb_lemma = get_lemma(verb, 'v')
+
+    if verb_lemma == "be":
+        question = "What " + verb + " " + noun + "?"
+
+    else:
+        second_word = get_second_word(verb)
+        next_word_index = (sentence.split()).index(verb) + 1
+        next_word = (sentence.split())[next_word_index]
+        next_pos_tag = corenlp.sNLP.pos(next_word)[0]
+        if next_pos_tag[1] == 'IN' or next_pos_tag[1] == 'TO' and next_pos_tag[0] != 'that':
+            question = question_word + second_word + " " + noun + " " + verb_lemma + " " + next_pos_tag[0] + "?"
+        else:
+            question = question_word + second_word + " " + noun + " " + verb_lemma + "?"
+
+    return question
+
+
+def get_questions(sentence):
+    questions = set()
+
+    # get possible answer phrases for sentence
+    answer_phrases = get_answer_phrases(sentence)
+
+    # select main verb and noun phrases
     verb_selector = get_tregex_matches("VP > S", sentence, 'match')
-    # print(verb_selector)
+    max_verb_phrase = ""
+    for match in verb_selector:
+        verb_candidate = get_text_from_node(match, sentence)
+        if len(verb_candidate) > len(max_verb_phrase):
+            max_verb_phrase = verb_candidate
+
     noun_selector = get_tregex_matches("NP > S", sentence, 'match')
+    for match in noun_selector:
+        noun = get_text_from_node(match, sentence)
 
-    max_l = ""
-    for names in verb_selector:
-        # print(names)
-
-        main_verb_node = ""
-        for name in names:
-            # print(name['clause'])
-            if 'mainvp' in name:
-                main_verb_node = name['mainvp']
-
-        # print(main_verb_node)
-        # main_verb = get_text_from_node(main_verb_node, sentence)
-        main_verb = get_text_from_node(names, sentence)
-
-        if len(main_verb) > len(max_l):
-            # nps = get_tregex_matches('NP', main_verb, 'match')
-            # if len(nps) == 0:
-            #     break
-            # np = get_text_from_node(min(nps), main_verb)
-            # print(np)
-
-            verbs = get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ', main_verb, 'match')
-            verb = get_text_from_node(verbs[0], main_verb)
-            # print(verb)
-
-            max_l = main_verb
-    for names in noun_selector:
-        # print(names)
-        noun = get_text_from_node(names, sentence)
-        if noun not in max_l and noun in answer_phrases:
-            noun_pos = corenlp.sNLP.pos(noun)[0][1]
-            if noun_pos == "DT" or noun_pos == "PRP":
-                questions.add("What " + max_l + "?")
-                continue
-
-            question_word = "What "
-            ner_tag = ner.get_ner_tag(noun)
-            if ner_tag != "O":
-                if ner_tag == "PERSON":
-                    question_word = "Who "
-                elif ner_tag == "LOCATION":
-                    question_word = "Where "
-                elif ner_tag == "DATE":
-                    question_word = "When "
-
-            verb_lemma = get_lemma(verb, 'v')
-
-            if verb_lemma == "be":
-                questions.add("What " + verb + " " + get_lemma(noun, 'n') + "?")
-            else:
-                verb_pos = corenlp.sNLP.pos(verb)[0][1]
-                second_word = "does"
-                if verb_pos == "VBN" or verb_pos == "VBD":
-                    second_word = "did"
-                if verb_pos == "VBP":
-                    second_word = "do"
-                next_word_index = (sentence.split()).index(verb) + 1
-                next_word = (sentence.split())[next_word_index]
-                pos_tag = corenlp.sNLP.pos(next_word)[0]
-                if pos_tag[1] == 'IN' or pos_tag[1] == 'TO' and pos_tag[0] != 'that':
-                    questions.add(question_word + second_word + " " + noun.lower() + " " + verb_lemma + " " + pos_tag[0] + "?")
-                else:
-                    questions.add(question_word + second_word + " " + noun.lower() + " " + verb_lemma + "?")
+        if noun in answer_phrases and noun not in max_verb_phrase:
+            new_question = get_question(max_verb_phrase, noun, sentence)
+            if new_question != "":
+                questions.add(new_question)
 
     if len(questions) == 0:
-        for answer_node in answer_nodes:
-            text = get_text_from_node(answer_node, sentence)
-            s = " " + sentence + " "
-            if text in sentence.split():
-                pos_tag = corenlp.sNLP.pos(text)[0][1]
-                if ner.get_ner_tag(text) != "O" or pos_tag == 'CD':
-                    questions.add(s.replace(' ' + text + ' ', ' __________________ '))
-                    break
+        for answer_phrase in answer_phrases:
+            questions.add(sentence.replace(' ' + answer_phrase + ' ', ' __________________ '))
 
     for question in questions:
         print(sentence)
@@ -177,37 +165,14 @@ def get_question(sentence):
     return questions
 
 
-def verb_id(sentence):
-    aux_match = get_tregex_matches('ROOT=root < (S=clause <+(/VP.*/) (VP < /(MD|VB.?)/=aux < (VP < /VB.?/=verb)))',
-                                   sentence,
-                                   'aux')
-
-    verb_match = get_tregex_matches('ROOT=root < (S=clause <+(/VP.*/) (VP < /(MD|VB.?)/=aux < (VP < /VB.?/=verb)))',
-                                    sentence,
-                                    'verb')
-
-    # mverb_match = get_tregex_matches('ROOT < (S=clause < (VP=mainvp </VB.?/=tensed !< (VP < /VB.?/)))',
-    #                                  sentence,
-    #                                  'clause')
-
-    third = get_tregex_matches('ROOT=root < (S=clause <+(/VP.*/) (VP <(/VB.?/=copula < is|are|was|were|am) !< VP))',
-                               sentence,
-                               'copula')
-
-
 def generate_questions(sentences):
     questions = set()
     for sentence in sentences:
-        sentence_questions = get_question(sentence.replace(".", ""))
+        sentence_questions = get_questions(sentence.replace(".", ""))
         for q in sentence_questions:
             questions.add(q)
     return questions
 
 
 if __name__ == "__main__":
-    # from text_processing import text_prep
-
-    # s = text_prep.get_ranked_sentences_lexrank("../text_processing/text_files/raw_input.txt")
-    # generate_questions(s)
-    # verb_id("John saw Mary.")
     print(corenlp.sNLP.pos("them"))
