@@ -9,13 +9,13 @@ if __name__ == "__main__":
     # sentences = text_prep.get_ranked_sentences_lexrank(FILE_PATH)
     # print(sentences)
     sentences = nltk.sent_tokenize(text_prep.read_file_to_string(FILE_PATH))
-    for sentence in sentences:
-        print("-------------------------------------------")
-        print(sentence)
-        simplify_sentence.simplify(sentence)
+    # for sentence in sentences:
+    #     print("-------------------------------------------")
+    #     print(sentence)
+    #     q_generator.verb_id(sentence)
 
-    # questions = q_generator.generate_questions(sentences)
+    questions = q_generator.generate_questions(sentences)
     # for question in questions:
-    #     print(questions)
+        # print(questions)
 
 

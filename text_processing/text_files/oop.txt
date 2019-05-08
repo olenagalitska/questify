@@ -1,0 +1,13 @@
+Object-oriented programming (or OOP) is a paradigm or pattern of programming whereby the solution to a programming problem is modelled as a collection of collaborating objects. Objects collaborate by sending messages to each other. It is most suitable for managing large, complex problems.
+
+An object is an entity that possesses both state (or properties or attributes) and behaviour. Put another way, an object encapsulates data and the functions that operate on that data. The data is usually hidden from other objects so that the only way to affect the data is through the object’s functions (or methods).
+An example of an object is a car. A car has attributes (e.g., colour, size, weight, fuel capacity, number of passengers, etc.). A car has behaviour represented by its methods (e.g., start engine, turn left/right, accelerate, stop, turn on wipers, etc.).
+
+A class is a special kind of object that’s used as a template for creating instances of itself. Think of it like a cookie cutter that produces cookies (or objects).
+
+A class can inherit the attributes and behaviour of another class (its parent), and it can modify or customize that behaviour (i.e., its methods) for itself. This leads to the concept of polymorphism. Polymorphism means that when an object receives a message, the correct method is called, based on the object’s class. That method may belong to the parent, or it may be one that is customized for this class.
+Smalltalk allows a class to inherit from only one class. Some OOP languages allow a class to inherit from several classes; this is known as multiple inheritance. Multiple inheritance causes a great deal of complexity, which is why it is generally avoided. We shall not speak of multiple inheritance again.
+
+While inheritance is an important aspect of OOP, it is not the only way to build up programs. Instead of inheritance, composition or aggregation can be used. A class may include instances of other classes without inheriting anything. It’s a “has a” relationship as in: Class A has a Class B instance as a member. If you used inheritance, then Class B would be a kind of Class A object; this is an “is a kind of” relationship. Let’s illustrate this with examples…
+
+A car is a kind of motorized vehicle (the parent class). So is a motorcycle. So is a motor boat. So is an aircraft. Each of these can inherit the attributes and behaviour of a motorized vehicle. But they can also customize the attributes and methods of the parent class for themselves.

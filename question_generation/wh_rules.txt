@@ -16,3 +16,6 @@ PP=unmv !< NP
 NP=unmv $ @NP
 NP|PP|ADJP|ADVP << NP|ADJP|VP|ADVP|PP=unmv
 @UNMV << NP|ADJP|VP|ADVP|PP=unmv
+NP=unmv > DT
+NP=unmv > PRP
+NP=unmv > EX
