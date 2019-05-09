@@ -60,10 +60,18 @@ def get_main_verb(verb_phrase):
         return verb_phrase
 
 
+def lower_np(noun_phrase):
+    for w in noun_phrase.split():
+        if ner.get_ner_tag(w) is None:
+            noun_phrase = noun_phrase.replace(w, w.lower())
+    return noun_phrase
+
+
 def get_question(verb_phrase, noun, sentence):
     noun_pos_tag = corenlp.sNLP.pos(noun)[0][1]
     if noun_pos_tag == "DT" or noun_pos_tag == "PRP":
         return "What " + verb_phrase + "?"
+    noun = lower_np(noun)
 
     # determine question word
     question_word = get_question_word(noun)
@@ -131,4 +139,9 @@ def generate_questions(sentences):
 
 
 if __name__ == "__main__":
-    print(corenlp.sNLP.pos("this"))
+    phrase = "Love George Bush"
+    for word in phrase.split():
+        print(ner.get_ner_tag(word))
+        if ner.get_ner_tag(word) is None:
+            phrase = phrase.replace(word, word.lower())
+    print(phrase)
