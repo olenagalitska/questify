@@ -1,74 +1,32 @@
 import nltk
 import requests
-from question_generation import ner, corenlp
+from question_generation import ner, corenlp, tregex
 from nltk.stem.wordnet import WordNetLemmatizer
 
 WH_RULES_PATH = '/Users/olenagalitska/Developer/questify/question_generation/wh_rules.txt'
 ANSWER_POS_RULES = '/Users/olenagalitska/Developer/questify/question_generation/answer_pos.txt'
 
-
-def get_rule_patterns(path):
-    file = open(path, 'r')
-    p = file.readlines()
-    file.close()
-    return p
-
-
-wh_rules_patterns = get_rule_patterns(WH_RULES_PATH)
+wh_rules_patterns = tregex.get_rule_patterns(WH_RULES_PATH)
 
 
 def get_lemma(word, w_type):
     return WordNetLemmatizer().lemmatize(word, w_type)
 
 
-def get_text_from_node(node, sentence):
-    node_phrase = node.replace(')', ' ')
-
-    s = list()
-    for word in sentence.split():
-        for post_p in ',.;:)]}':
-            if post_p in word:
-                s.append(word.replace(post_p, ''))
-                s.append(post_p)
-            else:
-                s.append(word)
-
-        for pre_p in '({[':
-            if pre_p in word:
-                s.append(word.replace(pre_p, ''))
-                s.append(pre_p)
-            else:
-                s.append(word)
-
-    res = [l for l in node_phrase.split() if l in s]
-    return " ".join(res)
-
-
-def get_tregex_matches(pattern, sentence, key_name):
-    result = list()
-    url = "http://localhost:9010/tregex"
-    r = requests.post(url, data=sentence.encode('utf-8'), params={"pattern": pattern})
-    if r.ok:
-        for s in r.json()['sentences']:
-            for key, value in s.items():
-                result.append(value[key_name])
-    return result
-
-
 def get_answer_phrases(sentence):
-    answer_patterns = get_rule_patterns(ANSWER_POS_RULES)
+    answer_patterns = tregex.get_rule_patterns(ANSWER_POS_RULES)
     answer_nodes = []
     for pattern in answer_patterns:
-        answer_nodes += get_tregex_matches(pattern, sentence, 'match')
+        answer_nodes += tregex.get_tregex_matches(pattern, sentence, 'match')
 
     for pattern in wh_rules_patterns:
-        unmovable_nodes_matches = get_tregex_matches(pattern, sentence, 'namedNodes')
+        unmovable_nodes_matches = tregex.get_tregex_matches(pattern, sentence, 'namedNodes')
         for match in unmovable_nodes_matches:
             node = match[0]
             if node['unmv'] in answer_nodes:
                 answer_nodes.remove(node['unmv'])
 
-    return list(get_text_from_node(x, sentence) for x in answer_nodes)
+    return list(tregex.get_text_from_node(x, sentence) for x in answer_nodes)
 
 
 def get_question_word(noun):
@@ -95,9 +53,9 @@ def get_second_word(verb):
 
 
 def get_main_verb(verb_phrase):
-    verbs = get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ', verb_phrase, 'match')
+    verbs = tregex.get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ', verb_phrase, 'match')
     if len(verbs) != 0:
-        return get_text_from_node(verbs[0], verb_phrase)
+        return tregex.get_text_from_node(verbs[0], verb_phrase)
     else:
         return verb_phrase
 
@@ -136,16 +94,16 @@ def get_questions(sentence):
     answer_phrases = get_answer_phrases(sentence)
 
     # select main verb and noun phrases
-    verb_selector = get_tregex_matches("VP > S", sentence, 'match')
+    verb_selector = tregex.get_tregex_matches("VP > S", sentence, 'match')
     max_verb_phrase = ""
     for match in verb_selector:
-        verb_candidate = get_text_from_node(match, sentence)
+        verb_candidate = tregex.get_text_from_node(match, sentence)
         if len(verb_candidate) > len(max_verb_phrase):
             max_verb_phrase = verb_candidate
 
-    noun_selector = get_tregex_matches("NP > S", sentence, 'match')
+    noun_selector = tregex.get_tregex_matches("NP > S", sentence, 'match')
     for match in noun_selector:
-        noun = get_text_from_node(match, sentence)
+        noun = tregex.get_text_from_node(match, sentence)
 
         if noun in answer_phrases and noun not in max_verb_phrase:
             new_question = get_question(max_verb_phrase, noun, sentence)
@@ -154,7 +112,7 @@ def get_questions(sentence):
 
     if len(questions) == 0:
         for answer_phrase in answer_phrases:
-            questions.add(sentence.replace(' ' + answer_phrase + ' ', ' __________________ '))
+            questions.add(sentence.replace(answer_phrase, ' __________________ '))
 
     for question in questions:
         print(sentence)
