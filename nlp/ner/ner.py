@@ -1,8 +1,8 @@
 from nltk.tag import StanfordNERTagger
 
-NER_4_CLASSIFIER = '/Users/olenagalitska/Developer/questify/question_generation/english.conll.4class.distsim.crf.ser.gz'
-NER_7_CLASSIFIER = '/Users/olenagalitska/Developer/questify/question_generation/english.muc.7class.distsim.crf.ser.gz'
-NER_JAR_PATH = '/Users/olenagalitska/Developer/questify/question_generation/stanford-ner.jar'
+NER_4_CLASSIFIER = '/Users/olenagalitska/Developer/questify/nlp/ner/english.conll.4class.distsim.crf.ser.gz'
+NER_7_CLASSIFIER = '/Users/olenagalitska/Developer/questify/nlp/ner/english.muc.7class.distsim.crf.ser.gz'
+NER_JAR_PATH = '/Users/olenagalitska/Developer/questify/nlp/ner/stanford-ner.jar'
 
 
 def get_ner_tags(phrase):

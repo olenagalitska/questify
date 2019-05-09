@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
-import requests
-from text_processing import text_prep, summarizer
-import subprocess
+from text_processing import text_prep
+from nlp import summarizer
 from question_generation import q_generator
 
 app = Flask(__name__)

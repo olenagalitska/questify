@@ -1,10 +1,9 @@
-import nltk
-import requests
-from question_generation import ner, corenlp, tregex
+from nlp import corenlp, tregex
+from nlp.ner import ner
 from nltk.stem.wordnet import WordNetLemmatizer
 
-WH_RULES_PATH = '/Users/olenagalitska/Developer/questify/question_generation/wh_rules.txt'
-ANSWER_POS_RULES = '/Users/olenagalitska/Developer/questify/question_generation/answer_pos.txt'
+WH_RULES_PATH = '/Users/olenagalitska/Developer/questify/question_generation/rules/wh_rules.txt'
+ANSWER_POS_RULES = '/Users/olenagalitska/Developer/questify/question_generation/rules/answer_pos.txt'
 
 wh_rules_patterns = tregex.get_rule_patterns(WH_RULES_PATH)
 
@@ -61,9 +60,9 @@ def get_main_verb(verb_phrase):
 
 
 def lower_np(noun_phrase):
-    for w in noun_phrase.split():
-        if ner.get_ner_tag(w) is None:
-            noun_phrase = noun_phrase.replace(w, w.lower())
+    w = noun_phrase.split()[0]
+    if ner.get_ner_tag(w) is None:
+        noun_phrase = noun_phrase.replace(w, w.lower())
     return noun_phrase
 
 
@@ -120,6 +119,7 @@ def get_questions(sentence):
 
     if len(questions) == 0:
         for answer_phrase in answer_phrases:
+            print(answer_phrase)
             questions.add(sentence.replace(answer_phrase, ' __________________ '))
 
     for question in questions:
