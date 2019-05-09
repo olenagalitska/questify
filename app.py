@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request
 from text_processing import text_prep
-from nlp import summarizer
 from question_generation import q_generator
 
 app = Flask(__name__)
 
 ranked = []
+FILE_PATH = "text_processing/text_files/raw_input.txt"
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -15,11 +15,10 @@ def index():
     if request.method == "POST":
         text = request.form['input-text']
         # text = text.encode('utf-8')
-        text_prep.rewrite_file("text_processing/text_files/raw_input.txt", text)
+        text_prep.rewrite_file(FILE_PATH, text)
         text = text_prep.sent_tokenize(text)
-        # ranked = text_prep.get_ranked_sentences("text_processing/text_files/raw_input.txt")
         global ranked
-        ranked = summarizer.generate_summary("text_processing/text_files/raw_input.txt")
+        ranked = text_prep.get_ranked_sentences_lexrank(FILE_PATH)
     return render_template('index.html', text=text, ranked=ranked)
 
 
@@ -31,7 +30,4 @@ def questify():
 
 
 if __name__ == '__main__':
-    # java_command = 'java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -annotators "tokenize,ssplit,pos,lemma,parse,sentiment" -port 9000 -timeout 30000'.split()
-    # print(java_command)
-    # subprocess.call(['cd', 'stanford-corenlp'] + java_command)
     app.run()
