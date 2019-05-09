@@ -103,20 +103,20 @@ def get_main_verb(verb_phrase):
 
 
 def get_question(verb_phrase, noun, sentence):
-    question = ""
-    verb = get_main_verb(verb_phrase)
     noun_pos_tag = corenlp.sNLP.pos(noun)[0][1]
     if noun_pos_tag == "DT" or noun_pos_tag == "PRP":
-        question = "What " + verb_phrase + "?"
+        return "What " + verb_phrase + "?"
 
     # determine question word
     question_word = get_question_word(noun)
+
+    verb = get_main_verb(verb_phrase)
 
     # transform verb
     verb_lemma = get_lemma(verb, 'v')
 
     if verb_lemma == "be":
-        question = "What " + verb + " " + noun + "?"
+        return "What " + verb + " " + noun + "?"
 
     else:
         second_word = get_second_word(verb)
@@ -124,11 +124,9 @@ def get_question(verb_phrase, noun, sentence):
         next_word = (sentence.split())[next_word_index]
         next_pos_tag = corenlp.sNLP.pos(next_word)[0]
         if next_pos_tag[1] == 'IN' or next_pos_tag[1] == 'TO' and next_pos_tag[0] != 'that':
-            question = question_word + second_word + " " + noun + " " + verb_lemma + " " + next_pos_tag[0] + "?"
+            return question_word + second_word + " " + noun + " " + verb_lemma + " " + next_pos_tag[0] + "?"
         else:
-            question = question_word + second_word + " " + noun + " " + verb_lemma + "?"
-
-    return question
+            return question_word + second_word + " " + noun + " " + verb_lemma + "?"
 
 
 def get_questions(sentence):
@@ -175,4 +173,4 @@ def generate_questions(sentences):
 
 
 if __name__ == "__main__":
-    print(corenlp.sNLP.pos("them"))
+    print(corenlp.sNLP.pos("this"))
