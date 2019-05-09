@@ -3,25 +3,15 @@ import requests
 
 def get_text_from_node(node, sentence):
     node_phrase = node.replace(')', ' ')
-
-    s = list()
-    for word in sentence.split():
-        for post_p in ',.;:)]}':
-            if post_p in word:
-                s.append(word.replace(post_p, ''))
-                s.append(post_p)
-            else:
-                s.append(word)
-
-        for pre_p in '({[':
-            if pre_p in word:
-                s.append(word.replace(pre_p, ''))
-                s.append(pre_p)
-            else:
-                s.append(word)
-
-    res = [l for l in node_phrase.split() if l in s]
-    return " ".join(res)
+    node_phrase = [x for x in node_phrase.split() if not (x[0] == '(' and len(x) > 1)]
+    res = [l for l in node_phrase if l in sentence]
+    text = ""
+    for w in res:
+        if w in ",.;:'\"?!]})":
+            text += w
+        else:
+            text += " " + w
+    return text[1:]
 
 
 def get_tregex_matches(pattern, sentence, key_name):

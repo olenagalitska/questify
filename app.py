@@ -25,8 +25,8 @@ def index():
 @app.route('/get_questions')
 def questify():
     questions = q_generator.generate_questions(ranked)
-
-    return 'questions'
+    html = render_template('questions.html', questions=questions)
+    return html
 
 
 if __name__ == '__main__':
