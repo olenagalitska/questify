@@ -54,11 +54,11 @@ def get_second_word(verb):
 
 
 def get_main_verb(verb_phrase):
-    print(corenlp.sNLP.parse(verb_phrase))
+    # print(corenlp.sNLP.parse(verb_phrase))
     verbs = tregex.get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ >> VP >> S', verb_phrase, 'match')
     # verbs = tregex.get_tregex_matches('VP', verb_phrase, 'match')
-    for verb in verbs:
-        print(tregex.get_text_from_node(verb, verb_phrase))
+    # for verb in verbs:
+    #     print(tregex.get_text_from_node(verb, verb_phrase))
     # else:
     candidate = verb_phrase.split()[0]
     if corenlp.sNLP.pos(candidate) == "MD":
@@ -97,7 +97,7 @@ def get_question(verb_phrase, noun, sentence):
     verb_lemma = get_lemma(verb, 'v')
 
     relation = (verb_lemma, noun, verb_phrase.replace(verb, ""))
-    print(relation)
+    # print(relation)
 
     if verb_lemma == "be":
         return "What " + verb + " " + noun + "?"
@@ -120,14 +120,14 @@ def get_questions(sentence):
     answer_phrases = get_answer_phrases(sentence)
 
     # select main verb and noun phrases
-    verb_selector = tregex.get_tregex_matches("VP > S", sentence, 'match')
+    verb_selector = tregex.get_tregex_matches("VP > (S > ROOT)", sentence, 'match')
     max_verb_phrase = ""
     for match in verb_selector:
         verb_candidate = tregex.get_text_from_node(match, sentence)
         if len(verb_candidate) > len(max_verb_phrase):
             max_verb_phrase = verb_candidate
 
-    noun_selector = tregex.get_tregex_matches("NP > S", sentence, 'match')
+    noun_selector = tregex.get_tregex_matches("NP > (S > ROOT)", sentence, 'match')
     for match in noun_selector:
         noun = tregex.get_text_from_node(match, sentence)
 
@@ -144,7 +144,7 @@ def get_questions(sentence):
 
     for question in questions:
         print(sentence)
-        print(corenlp.sNLP.parse(sentence))
+        # print(corenlp.sNLP.parse(sentence))
         print(question)
         print('-------------------------------------------------------------------------------------')
     return questions
@@ -161,14 +161,13 @@ def clean_sentence(sentence):
         print(node)
 
 
-
 def generate_questions(sentences):
     questions = list()
     for sentence in sentences:
         sentence_questions = get_questions(sentence.replace(".", ""))
         for q in sentence_questions:
             questions.append(q)
-    return questions
+    return set(questions)
 
 
 if __name__ == "__main__":

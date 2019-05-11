@@ -11,7 +11,7 @@ def get_text_from_node(node, sentence):
             text += w
         else:
             text += " " + w
-    return text[1:]
+    return text.strip(" ").replace(" '", "'")
 
 
 def get_tregex_matches(pattern, sentence, key_name):
