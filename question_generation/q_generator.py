@@ -1,4 +1,5 @@
-from nlp import corenlp, tregex
+from nlp import tregex
+from nlp.corenlp import sNLP as nlp
 from nlp.ner import ner
 from nltk.stem.wordnet import WordNetLemmatizer
 import nltk
@@ -31,10 +32,10 @@ def get_answer_phrases(sentence):
 
 
 def get_question_word(noun):
-    question_word = "What "
+    question_word = "WH "
     ner_tag = ner.get_ner_tag(noun)
     if ner_tag is not None:
-        if ner_tag[1] == "PERSON":
+        if ner_tag[1] == "PERSON" or ner_tag[1] == "ORGANIZATION":
             question_word = "Who "
         elif ner_tag[1] == "LOCATION":
             question_word = "Where "
@@ -44,7 +45,7 @@ def get_question_word(noun):
 
 
 def get_second_word(verb):
-    verb_pos_tag = corenlp.sNLP.pos(verb)[0][1]
+    verb_pos_tag = nlp.pos(verb)[0][1]
     second_word = "does"
     if verb_pos_tag == "VBN" or verb_pos_tag == "VBD":
         second_word = "did"
@@ -54,14 +55,8 @@ def get_second_word(verb):
 
 
 def get_main_verb(verb_phrase):
-    # print(corenlp.sNLP.parse(verb_phrase))
-    verbs = tregex.get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ >> VP >> S', verb_phrase, 'match')
-    # verbs = tregex.get_tregex_matches('VP', verb_phrase, 'match')
-    # for verb in verbs:
-    #     print(tregex.get_text_from_node(verb, verb_phrase))
-    # else:
     candidate = verb_phrase.split()[0]
-    if corenlp.sNLP.pos(candidate) == "MD":
+    if nlp.pos(candidate) == "MD":
         return candidate + verb_phrase.split()[1]
     else:
         return candidate
@@ -75,21 +70,21 @@ def lower_np(noun_phrase):
 
 
 def get_question(verb_phrase, noun, sentence):
-    noun_pos_tag = corenlp.sNLP.pos(noun)[0][1]
-    if noun_pos_tag == "DT" or noun_pos_tag == "WDT":
-        return "What " + verb_phrase + "?"
-    elif noun_pos_tag == "PRP":
-        return "Who " + verb_phrase + "?"
+    # noun_pos_tag = nlp.pos(noun)[0][1]
+    # if noun_pos_tag == "DT" or noun_pos_tag == "WDT":
+    #     return "What " + verb_phrase + "?"
+    # elif noun_pos_tag == "PRP":
+    #     return "Who " + verb_phrase + "?"
 
     noun = lower_np(noun)
 
-    next_noun = verb_phrase
-    answers = get_answer_phrases(verb_phrase)
-    for word in verb_phrase.split():
-        if word in answers:
-            next_noun = word
-            break
-    question_word = get_question_word(next_noun)
+    # next_noun = verb_phrase
+    # answers = get_answer_phrases(verb_phrase)
+    # for word in verb_phrase.split():
+    #     if word in answers:
+    #         next_noun = word
+    #         break
+    question_word = get_question_word(noun)
 
     verb = get_main_verb(verb_phrase)
 
@@ -97,17 +92,28 @@ def get_question(verb_phrase, noun, sentence):
     verb_lemma = get_lemma(verb, 'v')
 
     relation = (verb_lemma, noun, verb_phrase.replace(verb, ""))
-    # print(relation)
+
+    verbs = tregex.get_tregex_matches('VB | VBD | VBG | VBN | VBP | VBZ >> VP >> S', verb_phrase, 'match')
+    for v in verbs:
+        v_text = tregex.get_text_from_node(v, verb_phrase)
+        if v_text != verb:
+            verb_lemma += " to " + v_text
+
+    vp = verb_phrase.replace(verb + " ", " ")
+
+    print("WH " + verb + " " + vp + "?")
 
     if verb_lemma == "be":
-        return "What " + verb + " " + noun + "?"
+        print("WH " + verb + " " + noun + " " + vp + "?")
 
     else:
+        print("WH " + get_second_word(verb) + " " + noun + " " + verb_lemma + "?")
+
         second_word = get_second_word(verb)
         next_word_index = (sentence.split()).index(verb) + 1
         if next_word_index < len(sentence.split()):
             next_word = (sentence.split())[next_word_index]
-            next_pos_tag = corenlp.sNLP.pos(next_word)[0]
+            next_pos_tag = nlp.pos(next_word)[0]
             if (next_pos_tag[1] == 'IN' or next_pos_tag[1] == 'TO') and next_pos_tag[0] != 'that':
                 return question_word + second_word + " " + noun + " " + verb_lemma + " " + next_pos_tag[0] + "?"
         return question_word + second_word + " " + noun + " " + verb_lemma + "?"
@@ -171,4 +177,4 @@ def generate_questions(sentences):
 
 
 if __name__ == "__main__":
-    print(corenlp.sNLP.parse("He sailed away from this small ice-covered island to a great big ice-covered island"))
+    print(nlp.parse("He sailed away from this small ice-covered island to a great big ice-covered island"))
