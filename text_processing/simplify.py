@@ -1,6 +1,4 @@
-from nlp.corenlp import sNLP as nlp
 from nlp import tregex
-from question_generation.q_generator import generate_questions
 from nltk import sent_tokenize
 from text_processing.text_prep import read_file_to_string
 

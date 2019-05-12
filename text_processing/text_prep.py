@@ -23,6 +23,9 @@ def rewrite_file(filepath, content):
     f.close()
 
 
+def replace(phrase, new_phrase, sentence):
+    pass
+
 def get_ranked_sentences_lexrank(filepath):
     raw_text = list()
     raw_text.append(read_file_to_array(filepath))

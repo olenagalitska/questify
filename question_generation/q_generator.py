@@ -3,6 +3,8 @@ from nlp.corenlp import sNLP as nlp
 from nlp.ner import ner
 from nltk.stem.wordnet import WordNetLemmatizer
 import nltk
+from text_processing.text_prep import read_file_to_string
+from text_processing import simplify
 
 WH_RULES_PATH = '/Users/olenagalitska/Developer/questify/question_generation/rules/wh_rules.txt'
 ANSWER_POS_RULES = '/Users/olenagalitska/Developer/questify/question_generation/rules/answer_pos.txt'
@@ -28,7 +30,7 @@ def get_answer_phrases(sentence):
             if node['unmv'] in answer_nodes:
                 answer_nodes.remove(node['unmv'])
 
-    return list(tregex.get_text_from_node(x, sentence) for x in answer_nodes)
+    return list((tregex.get_text_from_node(x, sentence), x) for x in answer_nodes)
 
 
 def get_question_word(noun):
@@ -156,15 +158,62 @@ def get_questions(sentence):
     return questions
 
 
-def clean_sentence(sentence):
-    patterns = tregex.get_rule_patterns(REMOVE_FROM_S)
+def get_questions_new(sentence):
+    questions = set()
+    print(sentence)
 
-    nodes_to_remove = []
-    for pattern in patterns:
-        nodes_to_remove += tregex.get_tregex_matches(pattern, sentence, 'match')
+    answer_phrases = get_answer_phrases(sentence)
 
-    for node in nodes_to_remove:
-        print(node)
+    main_verb = tregex.get_tregex_matches("VP > ( S > ROOT )",
+                                          sentence, 'match')
+    # print(main_verb)
+
+    vp_s = tregex.get_tregex_matches("(/VB.?/ !> (/VB.?/ > VP )) > (VP > (S > ROOT))", sentence, 'match')
+    np_s = tregex.get_tregex_matches("NP > (S > ROOT)", sentence, 'match')
+    pp_s = tregex.get_tregex_matches("PP > (VP > (S > ROOT))", sentence, 'match')
+    print(pp_s)
+    print(vp_s)
+    # print(np_s)
+    # print(pp_s)
+
+    for answer in answer_phrases:
+        question_word = "WHAT / WHO "
+        # print(answer[0])
+        answer_type = answer[1].split()[0].replace("(", "")
+        if answer_type == "PP":
+            if ("IN" in answer[1] and "CD" in answer[1]) or ("(IN while)" in answer[1]):
+                question_word = "WHEN "
+            elif "(IN like)" in answer[1]:
+                question_word = "HOW "
+            elif "(IN for)" in answer[1] and 'QP' in answer[1]:
+                question_word = "FOR HOW LONG "
+            elif "(TO to)" in answer[1] or ("IN" in answer[1] and "CD" not in answer[1]):
+                question_word = "WHERE "
+
+        if len(vp_s) == 0:
+            print(sentence.replace(answer[0], "_________________"))
+            continue
+        verb_node = vp_s[0]
+        verb = tregex.get_text_from_node(verb_node, sentence)
+
+        verb_lemma = get_lemma(verb, 'v')
+
+        remainder = sentence.replace(answer[0], "").replace('.', "")
+
+        if verb_lemma == "be":
+            print(question_word + " " + verb + " " + remainder.replace(verb, '') + " ?")
+            continue
+
+        else:
+            remainder = remainder.replace(verb, verb_lemma)
+            second_word = get_second_word(verb)
+            print(question_word + " " + second_word + " " + remainder + " " + " ?")
+            continue
+
+        # WH_replaced = sentence.replace(answer[0], question_word, 1).replace(".", "?")
+        # print("> ", WH_replaced)
+
+    print("----------------------------------------------------------------------------------------------------------")
 
 
 def generate_questions(sentences):
@@ -177,4 +226,8 @@ def generate_questions(sentences):
 
 
 if __name__ == "__main__":
-    print(nlp.parse("He sailed away from this small ice-covered island to a great big ice-covered island"))
+    sentences = nltk.sent_tokenize(
+        read_file_to_string("/Users/olenagalitska/Developer/questify/text_processing/text_files/education.txt"))
+    simple_text = simplify.simplify_text("\n".join(sentences))
+    for s in nltk.sent_tokenize(simple_text):
+        get_questions_new(s)
