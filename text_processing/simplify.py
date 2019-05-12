@@ -1,6 +1,6 @@
 from nlp import tregex
 from nltk import sent_tokenize
-from text_processing.text_prep import read_file_to_string
+from text_processing.text_prep import read_file_to_string, replace
 
 
 def get_names_dict(r, s):
@@ -18,13 +18,13 @@ def try_remove(sent, pattern, *node_names, sentences):
     if 'conj' in names:
         value = tregex.get_text_from_node(names['conj'], sent)
         index = sent.index(value)
-        sentences.append(sent[:index].replace(",", "."))
+        sentences.append(replace(",", ".", sent[:index]))
         sentences.append(sent[index + len(value) + 1:])
         return
     for name in node_names:
         if name in names:
             value = tregex.get_text_from_node(names[name], sent)
-            new_sent = new_sent.replace(value, "")
+            new_sent = replace(value, "", new_sent)
 
     if new_sent != sent:
         sentences.append(new_sent)
@@ -55,9 +55,9 @@ def construct_finite(sent, sentences):
     rule = "S=finite !>> NP|PP < NP < (VP < VBP|VB|VBZ|VBD|MD) ?< /\\./=punct"
     names = get_names_dict(rule, sent)
     if 'finite' in names:
-        new_sent = tregex.get_text_from_node(names['finite'], sent) + "."
-        if new_sent.replace("..", ".") != sent:
-            sentences.append(new_sent.replace("..", "."))
+        new_sent = (tregex.get_text_from_node(names['finite'], sent) + ".").replace('..', '.')
+        if new_sent != sent:
+            sentences.append(new_sent)
 
 
 def extract_rel(sent, sentences):
@@ -88,15 +88,17 @@ def simplify_sentence(sentence):
 
 
 def simplify_text(text):
-    simplified_text = " "
-    for s in sent_tokenize(text):
-        simple_s = "\n".join(simplify_sentence(s))
+    simplified_text = ""
+    for snt in sent_tokenize(text):
+        simple_s = "\n".join(x[0].upper() + x[1:] for x in simplify_sentence(snt))
         simplified_text += simple_s
-        simplified_text += " "
+        simplified_text += '\n'
 
     return simplified_text
 
 
 if __name__ == "__main__":
-    simplify_text(
-        read_file_to_string("/Users/olenagalitska/Developer/questify/text_processing/text_files/complex_sentences.txt"))
+    # simplify_text(
+    #     read_file_to_string("/Users/olenagalitska/Developer/questify/text_processing/text_files/complex_sentences.txt"))
+    s = simplify_sentence("My ESL teacher, who came to Germany in 1986, likes to ride his mountain bike.")
+    print("\n".join(s))
