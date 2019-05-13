@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
     {% for question in questions %}
-        <textarea>{{ question }}</textarea>
+        <div class="md-form mb-4 pink-textarea active-pink-textarea">
+            <textarea id="form18" class="md-textarea form-control" rows="3">{{ question }}</textarea>
+        </div>
     {% endfor %}
 
 {% endblock %}

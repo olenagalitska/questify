@@ -9,13 +9,14 @@
     </form>
 
     <p>
-        {% for item in text %}
-            {% if item in ranked %}
-                <span class="ranked-sent">{{ item }}</span>
-            {% else %}
-                <span class="not-ranked-sent">{{ item }}</span>
-            {% endif %}
-        {% endfor %}
+    {{ text }}
+{#        {% for item in text %}#}
+{#            {% if item in ranked %}#}
+{#                <span class="ranked-sent">{{ item }}</span>#}
+{#            {% else %}#}
+{#                <span class="not-ranked-sent">{{ item }}</span>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
     </p>
 
 

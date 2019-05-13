@@ -1,8 +1,19 @@
-Ukraine occupies the southwestern portion of the Russian Plain (East European Plain). The country consists almost entirely of level plains at an average elevation of 574 feet (175 metres) above sea level. Mountainous areas such as the Ukrainian Carpathians and Crimean Mountains occur only on the country’s borders and account for barely 5 percent of its area. The Ukrainian landscape nevertheless has some diversity: its plains are broken by highlands—running in a continuous belt from northwest to southeast—as well as by lowlands.
-
-Get unlimited ad-free access to all Britannica’s trusted content. Start Your Free Trial Today
-The rolling plain of the Dnieper Upland, which lies between the middle reaches of the Dnieper (Dnipro) and Southern Buh (Pivdennyy Buh, or the Boh) rivers in west-central Ukraine, is the largest highland area; it is dissected by many river valleys, ravines, and gorges, some more than 1,000 feet (300 metres) deep. On the west the Dnieper Upland is abutted by the rugged Volyn-Podilsk Upland, which rises to 1,545 feet (471 metres) at its highest point, Mount Kamula. West of the Volyn-Podilsk Upland, in extreme western Ukraine, the parallel ranges of the Carpathian Mountains—one of the most picturesque areas in the country—extend for more than 150 miles (240 km). The mountains range in height from about 2,000 feet (600 metres) to about 6,500 feet (2,000 metres), rising to 6,762 feet (2,061 metres) at Mount Hoverla, the highest point in the country. The northeastern and southeastern portions of Ukraine are occupied by low uplands rarely reaching an elevation of 1,000 feet (300 metres).
-
-Among the country’s lowlands are the Pripet Marshes (Polissya), which lie in the northern part of Ukraine and are crossed by numerous river valleys. In east-central Ukraine is the Dnieper Lowland, which is flat in the west and gently rolling in the east. To the south, another lowland extends along the shores of the Black Sea and the Sea of Azov; its level surface, broken only by low rises and shallow depressions, slopes gradually toward the Black Sea. The shores of the Black Sea and the Sea of Azov are characterized by narrow, sandy spits of land that jut out into the water; one of these, the Arabat Spit, is about 70 miles (113 km) long but averages less than 5 miles (8 km) in width.
-
-The southern lowland continues in the Crimean Peninsula as the North Crimean Lowland. The peninsula—a large protrusion into the Black Sea—is connected to the mainland by the Perekop Isthmus. The Crimean Mountains form the southern coast of the peninsula. Mount Roman-Kosh, at 5,069 feet (1,545 metres), is the mountains’ highest point.
+This was the situation in 1965, when E. W. Dijkstra (1965) suggested using an integer variable to count the number of wakeups saved for future use.
+In his proposal, a new variable type, a semaphore, was introduced.
+A semaphore could have the value 0, indicating that no wakeups were saved, or some positive value if one or more wakeups were pending.
+Dijkstra proposed having two operations on semaphores, now usually called down and up.
+The down operation on a semaphore checks to see if the value is greater than 0.
+If so, it decrements the value and just continues.
+If the value is 0, the process is put to sleep without completing the down for the moment.
+Checking the value, changing it, and possibly going to sleep, are all done as a single, indivisible atomic action.
+It is guaranteed that once a semaphore operation has started, no other process can access the semaphore until the operation has completed or blocked.
+This atomicity is absolutely essential to solving synchronization problems and avoiding race conditions.
+Atomic actions, in which a group of related operations are either all performed without interruption or not performed at all, are extremely important in many other areas of computer science as well.
+The up operation increments the value of the semaphore addressed.
+If one or more processes were sleeping on that semaphore, unable to complete an earlier down operation, one of them is chosen by the system and is allowed to complete its down.
+Thus, after an up on a semaphore with processes sleeping on it, the semaphore will still be 0, but there will be one fewer process sleeping on it.
+The operation of incrementing the semaphore and waking up one process is also indivisible.
+No process ever blocks doing an up, just as no process ever blocks doing a wakeup in the earlier model.
+As an aside, in Dijkstra’s original paper, he used the names P and V instead of down and up, respectively.
+Since these have no mnemonic significance to people who do not speak Dutch and only marginal significance to those who do.
+These were first introduced in the Algol 68 programming language.

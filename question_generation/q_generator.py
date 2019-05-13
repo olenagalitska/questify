@@ -96,13 +96,12 @@ def get_questions(sentence):
             second_word = get_second_word(verb)
             question = question_word + " " + second_word + " " + remainder + "?"
             questions.add(question)
-
     return questions
 
 
-def generate_questions(sentences):
+def generate_questions(input_sentences):
     questions = list()
-    for sentence in sentences:
+    for sentence in input_sentences:
         print(sentence)
         sentence_questions = get_questions(sentence)
         for q in sentence_questions:
@@ -114,6 +113,6 @@ def generate_questions(sentences):
 
 if __name__ == "__main__":
     sentences = nltk.sent_tokenize(
-        read_file_to_string("/Users/olenagalitska/Developer/questify/text_processing/text_files/raw_input.txt"))
+        read_file_to_string("/Users/olenagalitska/Developer/questify/text_processing/text_files/complex_sentences.txt"))
     simple_text = simplify.simplify_text("\n".join(sentences))
     generate_questions(nltk.sent_tokenize(simple_text))

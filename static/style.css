@@ -11,3 +11,8 @@
     background-color: yellow;
     cursor: pointer;
 }
+
+.question-area {
+    width: 100%;
+    border: dotted 1px black;
+}
